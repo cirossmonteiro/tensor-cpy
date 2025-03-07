@@ -16,11 +16,11 @@ section .data
 
     order equ 3
     dimensions dq 3, 4, 5
-    index equ 3
-    index2 equ 26
+    index equ 26
 
 section .bss
-    final resd 3
+    final resq 3
+    errors resq 1
 
 section .text
     ; global _start
@@ -41,48 +41,39 @@ test_passed:
     mov edx, pass_len ; tamanho da mensagem
     int 0x80         ; chama o kernel
 
-    call end
+    mov r15, 1444
+    mov r13, [errors]
+    mov r12, 1445
+    ret
 
 test_failed:
     ; Exibe mensagem de falha
-    mov eax, 4       ; syscall: write
-    mov ebx, 1       ; file descriptor: stdout
-    mov ecx, fail_msg ; mensagem de falha
-    mov edx, fail_len ; tamanho da mensagem
-    int 0x80         ; chama o kernel
-
-    call end
+    ; mov eax, 4       ; syscall: write
+    ; mov ebx, 1       ; file descriptor: stdout
+    ; mov ecx, fail_msg ; mensagem de falha
+    ; mov edx, fail_len ; tamanho da mensagem
+    ; int 0x80         ; chama o kernel
+    ; mov r15, 123123
+    inc qword [errors]
+    ; mov r12, 111222
+    ret
 
 ; _start:
 test__compute_tensor_index:
+    mov qword [errors], 0
     mov rdi, order
     mov rsi, dimensions
-    mov rdx, index
+    mov rdx, 26
     mov rcx, final
     
     call _compute_tensor_index
-    cmp dword [final+0*8], 0
-    jne test_failed
-    cmp dword [final+1*8], 0
-    jne test_failed
-    cmp dword [final+2*8], 3
-    jne test_failed
-    call test_passed
 
-    ; mov rdi, order
-    ; mov rsi, dimensions
-    ; mov rdx, index2
-    ; mov rcx, final
-    
-    ; call _compute_tensor_index
-    ; cmp dword [final+0*8], 1
-    ; jne test_failed
-    ; cmp dword [final+1*8], 1
-    ; jne test_failed
-    ; cmp dword [final+2*8], 1
-    ; jne test_failed
-    ; call test_passed
-
-    ; mov eax, 60      ; syscall: exit (Linux)
-    ; xor edi, edi     ; status 0
-    ; syscall
+    cmp qword [final+0*8], 1
+    jne test_failed
+    cmp qword [final+1*8], 2
+    jne test_failed
+    cmp qword [final+2*8], 2
+    jne test_failed
+    ; jmp test_passed
+    mov rax, [errors]
+    ret

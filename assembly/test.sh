@@ -28,4 +28,5 @@ chmod +x main_test
 echo test started
 ./main_test
 echo test ended
-rm main_test
+# rm main_test # comment to debug
+rm *.o

@@ -34,8 +34,6 @@ _compute_tensor_index:
     mov r9, rdx ; free rdx for division
     mov r10, rcx ; free rcx for loop
 
-    
-    
     ; compute product
     ; mov rdi, rdi ; coincidence
     ; mov rsi , rsi ; coincidence
@@ -49,16 +47,15 @@ _compute_tensor_index:
     _compute_tensor_index_main:
         ; p (ptemp) /= dimensions[i];
         mov rax, [ptemp] ; working
-        mov rdx, 0 ; prepare for division ; working
-        mov rbx, [rsi+rdi*8] ; division by zero ; debugging...
-        div rbx
+        mov rdx, 0 ; prepare for division
+        div qword [rsi+rdi*8]
         mov [ptemp], rax
 
         ; final[i] = (index - r) / p;
-        mov rax, r8
+        mov rax, r9
         sub rax, [r]
         mov edx, 0 ; prepare for division
-        div dword [ptemp]
+        div qword [ptemp]
         mov [r10+rdi*8], rax
 
         ; r += final[i] * p;
