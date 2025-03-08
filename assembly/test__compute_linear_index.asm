@@ -1,28 +1,28 @@
 [BITS 64]
 
-; void _compute_tensor_index(
+; unsigned long _compute_linear_index(
 ;     unsigned int order,
 ;     unsigned int *dimensions,
-;     unsigned long index,
-;     unsigned int *final
+;     unsigned int *index
 ; )
 
 section .data
     ; Mensagens de teste
-    pass_msg db "Test _compute_tensor_index passed!", 0xA
+    pass_msg db "Test _compute_linear_index passed!", 0xA
     pass_len equ $ - pass_msg
-    fail_msg db "Teste _compute_tensor_index failed!", 0xA
+    fail_msg db "Teste _compute_linear_index failed!", 0xA
     fail_len equ $ - fail_msg
 
     order equ 3
     dimensions dq 3, 4, 5
+    index dq 1, 1, 1
 
 section .bss
     final resq 3
 
 section .text
-    global test__compute_tensor_index
-    extern _compute_tensor_index
+    global test__compute_linear_index
+    extern _compute_linear_index
 
 ; Finaliza o programa
 end:
@@ -51,20 +51,15 @@ test_failed:
     ret
 
 ; _start:
-test__compute_tensor_index:
+test__compute_linear_index:
     ; first test case
     mov rdi, order
     mov rsi, dimensions
-    mov rdx, 26
-    mov rcx, final
+    mov rdx, index
     
-    call _compute_tensor_index
+    call _compute_linear_index
 
-    cmp qword [final+0*8], 1
-    jne test_failed
-    cmp qword [final+1*8], 1
-    jne test_failed
-    cmp qword [final+2*8], 1
+    cmp qword rax, 26
     jne test_failed
     jmp test_passed
 
