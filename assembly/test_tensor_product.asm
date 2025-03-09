@@ -11,7 +11,8 @@ section .data
     dimensions_b dq 2, 2
     values_a dq 1, 2, 3, 4
     values_b dq 5, 6, 7, 8
-    test_values dq 19, 22, 43 50
+    matrix_values dq 19, 22, 43 50
+    tensor_values dq 5,6,7,8 , 10,12,14,16 , 15,18,21,24 , 20,24,28,32
 
 section .bss
     new_values resq 16
@@ -59,14 +60,15 @@ test_tensor_product:
     
     call tensor_product
 
-    cmp qword [new_values+0*8], 19
-    jne test_failed
-    cmp qword [new_values+1*8], 22
-    jne test_failed
-    cmp qword [new_values+2*8], 43
-    jne test_failed
-    cmp qword [new_values+2*8], 50
-    jne test_failed
+    mov r10, 0
+    mov rcx, 16
+    for:
+        mov r11, [tensor_values+r10*8]
+        cmp qword [new_values+r10*8], r11
+        jne test_failed
+        inc r10
+        loop for
+
     jmp test_passed
     
     ret

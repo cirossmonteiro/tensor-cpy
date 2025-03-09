@@ -74,13 +74,14 @@ tensor_product:
             mov [v_b], rax ; v_b
 
             ; newt.assign(newpos, v1 * v2)
-            mov rax, v_a
+            mov rax, [v_a]
             mul qword [v_b]
             mov r15, [new_pos]
             mov [r14+r15*8], rax
 
             inc qword [pos_b]
-            loop for_b
+            dec rcx
+            jnz for_b
 
         inc qword [pos_a]
         dec qword [rcx2]
