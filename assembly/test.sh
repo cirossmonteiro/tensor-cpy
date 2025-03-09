@@ -6,11 +6,13 @@ echo script started
 nasm -f elf64 -o product.o product.asm
 nasm -f elf64 -o _compute_tensor_index.o _compute_tensor_index.asm
 nasm -f elf64 -o _compute_linear_index.o _compute_linear_index.asm
+nasm -f elf64 -o tensor_product.o tensor_product.asm
 
 # tests
 nasm -f elf64 -o test_product.o test_product.asm
 nasm -f elf64 -o test__compute_tensor_index.o test__compute_tensor_index.asm
 nasm -f elf64 -o test__compute_linear_index.o test__compute_linear_index.asm
+nasm -f elf64 -o test_tensor_product.o test_tensor_product.asm
 nasm -f elf64 -o tests.o tests.asm
 
 echo all compiled
@@ -20,9 +22,11 @@ ld -m elf_x86_64 \
 product.o \
 _compute_tensor_index.o \
 _compute_linear_index.o \
+tensor_product.o \
 test_product.o \
 test__compute_tensor_index.o \
 test__compute_linear_index.o \
+test_tensor_product.o \
 tests.o \
 -o main_test
 
