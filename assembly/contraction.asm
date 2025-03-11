@@ -9,9 +9,6 @@
 ;     unsigned int *new_values
 ; )
 
-section .data
-
-
 section .bss
     p resq 1
     new_p resq 1
@@ -22,10 +19,13 @@ section .bss
     new_dimensions resq 1
     index_array resq 1
     new_index_array resq 1
+    I resq 1
+    J resq 1
     ; ptemp resq 1
 
 section .text
     global contraction
+    extern malloc
     extern product
     extern _compute_tensor_index
     extern _compute_linear_index
@@ -33,19 +33,20 @@ section .text
     syscall_mmap  equ 9     ; syscall para mmap
     syscall_munmap equ 11   ; syscall para munmap
 
-; free use: r14,r15
+; free use: r10-r15
 
-; rdi(r8): order
-; rsi(r9): *dimensions
-; rdx(r10): I
-; rcx(r11): J
-; r12: *values
-; r13: *new_values
+; rdi: order
+; rsi: *dimensions
+; rdx([I]): I
+; rcx([J]): J
+; r8: *values
+; r9: *new_values
 contraction:
-    mov r8, rdi
-    mov r9, rsi
-    mov r10, rdx ; free rdx for division
-    mov r11, rcx ; free rcx for loop
+    ; mov rdi
+    ; mov rsi
+    mov [I], rdx ; free rdx for division
+    mov [J], rcx ; free rcx for loop
+    line47:
 
     ; for(i = 0; i < order; i++) {
     ;     p *= dimensions[i];
@@ -54,156 +55,141 @@ contraction:
     mov [p], rax
 
     ; allocate memory for index_array (order)
-    mov rax, r8
-    mov r14, 8
-    mul r14 ; rax == order*8
-    mov [array_bytes], rax
-
-    ; --- Chamada mmap para alocar new_order*8 bytes ---
-    mov rax, 9                  ; syscall mmap
-    mov rdi, 0                  ; endereço (0 = escolha automática)
-    mov rsi, [array_bytes]      ; tamanho
-    mov rdx, 3                  ; PROT_READ | PROT_WRITE (0x1 | 0x2 = 0x3)
-    syscall                     ; Executa mmap
-
+    mov rax, rdi
+    mov r10, 8
+    mul r10 ; rax == order*8
+    push rdi
+    mov rdi, rax
+    call malloc
+    pop rdi
     mov [index_array], rax
-
-    ; --- fim de mmap
 
     ; allocate memory for new_index_array (order-2)
     mov rax, r8
     sub rax, 2
-    mov r14, 8
-    mul r14 ; rax == (order-2)*8
-    mov [array_bytes], rax
-
-    ; --- Chamada mmap para alocar new_order*8 bytes ---
-    mov rax, 9                  ; syscall mmap
-    mov rdi, 0                  ; endereço (0 = escolha automática)
-    mov rsi, [array_bytes]      ; tamanho
-    mov rdx, 3                  ; PROT_READ | PROT_WRITE (0x1 | 0x2 = 0x3)
-    syscall                     ; Executa mmap
-
+    mov r10, 8
+    mul r10 ; rax == (order-2)*8
+    push rdi
+    mov rdi, rax
+    call malloc
+    pop rdi
     mov [new_index_array], rax
-
-    ; --- fim de mmap
 
     ; allocate memory for new_dimensions (new_order == order-2)
     mov rax, r8
     sub rax, 2
-    mov r14, 8
-    mul r14 ; rax == new_order*8
-    mov [array_bytes], rax
-
-    ; --- Chamada mmap para alocar new_order*8 bytes ---
-    mov rax, 9                  ; syscall mmap
-    mov rdi, 0                  ; endereço (0 = escolha automática)
-    mov rsi, [array_bytes]      ; tamanho
-    mov rdx, 3                  ; PROT_READ | PROT_WRITE (0x1 | 0x2 = 0x3)
-    syscall                     ; Executa mmap
-
+    mov r10, 8
+    mul r10 ; rax == new_order*8
+    push rdi
+    mov rdi, rax
+    call malloc
+    pop rdi
     mov [new_dimensions], rax
 
-    ; --- fim de mmap
-
-    mov qword [ind], 0 ; current_i = 0;
-    mov qword [ind2], 0 ; i = 0;
-    mov rcx, r8
+    mov qword r10, 0 ; current_i = 0;
+    mov qword r11, 0 ; i = 0;
+    mov rcx, rdi
+    line93:
+        line94:
 
     ; for(i = 0; i < order; i++)
     for:
         ; if (i == I || i == J) {
         ;     continue;
         ; }
+        mov r10, [I]
         cmp [ind], r10 ; i == I
-        sete r14b
-        cmp [ind], r11 ; i == J
-        sete r15b
-        or r14b, r15b
+        sete r10b
+        mov r10, [J]
+        cmp [ind], r10 ; i == J
+        sete r11b
+        or r10b, r11b
         jnz for_continue
 
         ; new_dimensions[current_i] = dimensions[i];
-        mov rsi, r9
-        mov r14, [ind]
-        mov r15, [ind2]
-        mov r15, [rsi+r15*8] ; r12 == dimensions[i]
-        mov [new_dimensions+r14*8], r15; new_dimensions[current_i]
-        inc qword [ind]
+        mov r12, [rsi+r11*8] ; r12 == dimensions[i]
+        mov [new_dimensions+r10*8], r12 ; new_dimensions[current_i]
+        inc r10
 
         for_continue:
-            inc qword [ind2]
-            ; call for
+            inc r11
+
         loop for
 
-        
     ; new_p = product of elements of new_dimensions
-    mov rdi, r10
+    push rdi
     sub rdi, 2
+    push rsi
     mov rsi, new_dimensions
     call product
+    pop rsi
+    pop rdi
     mov [new_p], rax
 
     ; new_values = [0,0,...,0,0]
     mov rcx, [new_p]
-    mov qword [ind], 0
-    zero_values:
-        mov r14, [ind]
-        mov qword [r13+r14*8], 0
-        inc qword [ind]
-        loop zero_values
+    zero_new_values:
+        mov qword [r9+(rcx-1)*8], 0
+        loop zero_new_values
 
-    mov qword [ind], 0 ; ind == i
     ; for(i = 0; i < p; i++)
+    mov rdx, 0
     for2:
         ; _compute_tensor_index(order, dimensions, i, index);
-        mov rdi, r8
-        mov rsi, r9
-        mov rdx, [ind]
-        mov rcx, [index_array]
+        ; args pre-defined: rdi, rsi, rdx, rcx
         call _compute_tensor_index
 
         ; if (index[I] == index[J])
-        mov r15, [index_array+r12*8]
-        cmp [index_array+r11*8], r15
+        mov r14, [I]
+        mov r14, [index_array+r14*8] ; index[I]
+        mov r15, [J]
+        mov r15, [index_array+r15*8] ; index[J]
+        cmp r14, r15
         jne for2_continue
 
-        mov qword [ind2], 0 ; current_i = 0
-        mov qword [ind3], 0 ; j = 0
+        mov r10, 0 ; current_i = 0
         ; for(j = 0; j < order; j++)
-        mov rcx, r8
+        mov r11, 0 ; j = 0
+        mov rcx, r8 ; loop
         for3:
             ; if (j == I || j == J)
-            cmp [ind3], r10 ; j == I
+            mov r12, [I]
+            cmp r11, r12 ; j == I?
+            sete r13b
+            mov r12, [J]
+            cmp r11, r12; j == J?
             sete r14b
-            cmp [ind3], r11 ; j == J
-            sete r15b
-            or r14b, r15b
+            or r13b, r14b
             jnz for3_continue
 
             ; new_index[current_i] = index[j];
-            mov r14, [ind2]
-            mov r15, [ind3]
-            add r15, [index_array]
-            mov qword [new_index_array+r14], r15
+            mov r12, [index_array+r11*8] ; index[j]
+            mov [new_index_array+r10*8], r12
 
-            inc qword [ind2]
+            inc r10
 
             for3_continue:
-                inc qword [ind3]
+                inc r11
             loop for3
-                
+
         ; new_pos = _compute_linear_index(new_order, new_dimensions, new_index);
-        mov rdi, r8
-        mov rsi, r9
+        push rdi
+        sub rdi, 2
+        push rsi
+        mov rsi, new_dimensions
+        push rdx
         mov rdx, new_index_array
         call _compute_linear_index
+        pop rdx
+        pop rsi
+        pop rdi
         
+        ; rax = new_pos
         ; new_values[new_pos] += values[i];
-        mov r14, [ind]
-        mov r14, [r12+r14*8]
-        add [r13+rax*8], r14
+        mov r10, [r8+rdx*8]
+        add [r9+rax*8], r10
 
         for2_continue:
-            inc qword [ind]
-    
+            inc rdx
+
     ret

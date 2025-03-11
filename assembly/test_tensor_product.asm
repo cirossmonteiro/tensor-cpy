@@ -13,6 +13,7 @@ section .data
     values_b dq 5, 6, 7, 8
     matrix_values dq 19, 22, 43 50
     tensor_values dq 5,6,7,8 , 10,12,14,16 , 15,18,21,24 , 20,24,28,32
+    tensor_dimensions dq 2, 2, 2, 2
 
 section .bss
     new_values resq 16
@@ -20,6 +21,7 @@ section .bss
 section .text
     global test_tensor_product
     extern tensor_product
+    extern contraction
 
 ; Finaliza o programa
 end:
@@ -68,6 +70,14 @@ test_tensor_product:
         jne test_failed
         inc r10
         loop for
+    
+    mov rdi, 4
+    mov rsi, tensor_dimensions
+    mov rdx, 1
+    mov rcx, 2
+    mov r8, tensor_values
+    mov r9, new_values
+    call contraction
 
     jmp test_passed
     
