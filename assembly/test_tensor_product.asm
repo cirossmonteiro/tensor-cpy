@@ -16,7 +16,8 @@ section .data
     tensor_dimensions dq 2, 2, 2, 2
 
 section .bss
-    new_values resq 16
+    new_tensor_values resq 16
+    new_matrix_values resq 4
 
 section .text
     global test_tensor_product
@@ -24,10 +25,10 @@ section .text
     extern contraction
 
 ; Finaliza o programa
-end:
-    mov eax, 1       ; syscall: exit
-    xor ebx, ebx     ; status 0
-    int 0x80
+; end:
+;     mov eax, 1       ; syscall: exit
+;     xor ebx, ebx     ; status 0
+;     int 0x80
 
 test_passed:
     ; Se todos os testes passaram, exibe mensagem de sucesso
@@ -37,7 +38,7 @@ test_passed:
     mov edx, pass_len ; tamanho da mensagem
     int 0x80         ; chama o kernel
 
-    ret
+    call end
 
 test_failed:
     ; Exibe mensagem de falha
@@ -47,7 +48,7 @@ test_failed:
     mov edx, fail_len ; tamanho da mensagem
     int 0x80         ; chama o kernel
 
-    ret
+    call end
 
 ; _start:
 test_tensor_product:
@@ -58,27 +59,54 @@ test_tensor_product:
     mov rcx, 2
     mov r8, dimensions_b,
     mov r9, values_b
-    push new_values
+    push new_tensor_values ; 7th argument
     
     call tensor_product
+    
+    pop rax
 
     mov r10, 0
     mov rcx, 16
+    line70:
     for:
-        mov r11, [tensor_values+r10*8]
-        cmp qword [new_values+r10*8], r11
+        mov rax, [tensor_values+r10*8]
+        cmp [new_tensor_values+r10*8], rax
         jne test_failed
         inc r10
         loop for
+
+    ; call test_passed
+    ; it works until here
     
     mov rdi, 4
     mov rsi, tensor_dimensions
-    mov rdx, 1
-    mov rcx, 2
-    mov r8, tensor_values
-    mov r9, new_values
+    mov rdx, 1 ; I
+    mov rcx, 2 ; J
+    mov r8, new_tensor_values
+    mov r9, new_matrix_values
+
     call contraction
 
-    jmp test_passed
+    ; mov r10, 0
+    ; line88:
+    ; mov rcx, 16
+    ; line89:
+    ; for2:
+    ;     mov rax, [matrix_values+r10*8]
+    ;     mov r11, [new_matrix_values+r10*8]
+    ;     mov r12, [new_matrix_values+r10*8]
+    ;     cmp [new_matrix_values+r10*8], rax ; DEBUG
+    ;     jne test_failed
+    ;     inc r10
+    ;     loop for2
+
+    call test_passed
     
-    ret
+    
+    ; ret
+
+; Finaliza o programa
+end:
+    mov eax, 1       ; syscall: exit
+    xor ebx, ebx     ; status 0
+    int 0x80

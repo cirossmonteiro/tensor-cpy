@@ -5,13 +5,13 @@ section .data
 
 section .text
     global _start
-    extern test_product
+    ; extern test_product
     ; extern test__compute_tensor_index
     ; extern test__compute_linear_index
     ; extern test_tensor_product
 
 _start:
-    call test_product
+    ; call test_product
     ; call test__compute_tensor_index
     ; call test__compute_linear_index
     ; call test_tensor_product

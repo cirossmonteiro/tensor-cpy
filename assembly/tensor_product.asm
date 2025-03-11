@@ -1,5 +1,16 @@
 [BITS 64]
 
+; section .data
+;     p_a dw 1
+;     p_b dw 1
+;     pos_a dw 1
+;     pos_b dw 1
+;     new_pos dw 1
+;     new_value dw 1
+;     v_a dw 1
+;     v_b dw 1
+;     rcx2 dw 1
+
 section .bss
     p_a resq 1
     p_b resq 1
