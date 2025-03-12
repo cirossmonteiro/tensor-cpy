@@ -1,0 +1,4 @@
+main_test
+main
+*.o
+tensor_lib_asm

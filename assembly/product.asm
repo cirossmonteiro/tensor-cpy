@@ -9,6 +9,7 @@ section .text
 product:
     push rbx
     push rcx
+    push rdx
     
     mov rax, 1
     mov rcx, rdi
@@ -17,7 +18,7 @@ product:
         mov rbx, [rsi+(rcx-1)*8] ; DEBUG here
         mul rbx
         loop main_product
-
+    pop rdx
     pop rcx
     pop rbx
 

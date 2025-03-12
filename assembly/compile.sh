@@ -13,7 +13,7 @@ nasm -f elf64 -o tensor_product.o tensor_product.asm
 nasm -f elf64 -o contraction.o contraction.asm
 
 # C wrapper + linking
-gcc -shared -o tensor_asm.so -fPIC tensor.c \
+gcc -z noexecstack -fPIC -shared -o tensor_asm.so -fPIC tensor.c \
 malloc.o \
 product.o \
 _compute_tensor_index.o \

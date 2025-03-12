@@ -22,7 +22,7 @@ _compute_linear_index:
     
     mov r9, 0 ; final (return)
     mov r10, 1 ; p
-    mov r11, rdx ; because of mul
+    mov r11, rdx ; free for mul
 
     mov rcx, rdi ; loop
     _compute_linear_index_main:
