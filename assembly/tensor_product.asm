@@ -15,9 +15,6 @@ section .text
     extern product
     extern malloc
 
-    syscall_mmap  equ 9     ; syscall para mmap
-    syscall_munmap equ 11   ; syscall para munmap
-
 ; rdi: order_a
 ; rsi: *dimensions_a
 ; rdx: *values_a

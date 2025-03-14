@@ -12,27 +12,18 @@ nasm -f elf64 -o _compute_linear_index.o _compute_linear_index.asm
 nasm -f elf64 -o tensor_product.o tensor_product.asm
 nasm -f elf64 -o contraction.o contraction.asm
 
-# ar rcs libmylib.a malloc.o product.o _compute_tensor_index.o _compute_linear_index.o tensor_product.o contraction.o
+# main
+nasm -f elf64 -o benchmark.o benchmark.asm
 
-# C wrapper + linking
-gcc -fPIC -c tensor.c $(python3-config --cflags --ldflags)
-gcc  -no-pie -nostartfiles -fpic -o tensor_asm.so \
-tensor.o \
+# link
+ld -m elf_x86_64 \
 malloc.o \
 product.o \
 _compute_tensor_index.o \
 _compute_linear_index.o \
 tensor_product.o \
 contraction.o \
- -shared
+benchmark.o \
+-o benchmark
 
-# ld -m elf_x86_64 \
-# malloc.o \
-# product.o \
-# _compute_tensor_index.o \
-# _compute_linear_index.o \
-# tensor_product.o \
-# contraction.o \
-# -o tensor_asm2.so
-
-echo all compiled
+echo benchmark compiled

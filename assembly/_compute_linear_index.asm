@@ -8,7 +8,6 @@
 
 section .text
     global _compute_linear_index
-    extern product
 
 ; rdi: order
 ; rsi: *dimensions

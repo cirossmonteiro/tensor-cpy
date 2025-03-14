@@ -9,18 +9,12 @@
 ;     unsigned int *new_values
 ; )
 
-section .bss
-    new_index_array resq 1
-
 section .text
     global contraction
     extern malloc
     extern product
     extern _compute_tensor_index
     extern _compute_linear_index
-
-    syscall_mmap  equ 9     ; syscall para mmap
-    syscall_munmap equ 11   ; syscall para munmap
 
 ; free use: r10-r15
 
@@ -116,6 +110,7 @@ contraction:
     for2:
         ; _compute_tensor_index(order, dimensions, i, index);
         ; args pre-defined: rdi, rsi, rdx
+        prefetchT2 [rsi + 64]
         push rcx
         mov rcx, r14
         call _compute_tensor_index
@@ -146,6 +141,7 @@ contraction:
             mov rax, [r14+rbx*8] ; index[j]
             mov [r15+rdx*8], rax ; new_index[current_i]
 
+            ; current_i++;
             inc rdx
 
             for3_continue:
@@ -159,6 +155,7 @@ contraction:
         push rdi
         sub rdi, 2
         push rsi
+        prefetchT2 [rsi + 64]
         mov rsi, r13
         push rdx
         mov rdx, r15
