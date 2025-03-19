@@ -110,7 +110,6 @@ contraction:
     for2:
         ; _compute_tensor_index(order, dimensions, i, index);
         ; args pre-defined: rdi, rsi, rdx
-        prefetchT2 [rsi + 64]
         push rcx
         mov rcx, r14
         call _compute_tensor_index
@@ -155,7 +154,6 @@ contraction:
         push rdi
         sub rdi, 2
         push rsi
-        prefetchT2 [rsi + 64]
         mov rsi, r13
         push rdx
         mov rdx, r15
