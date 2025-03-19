@@ -66,7 +66,7 @@ test__compute_tensor_index:
     jne test_failed
     cmp qword [final+2*8], 1
     jne test_failed
-    jmp test_passed
+    call test_passed
 
     ; todo: ; second test case
     

@@ -28,7 +28,7 @@ test_passed:
     mov edx, pass_len ; tamanho da mensagem
     int 0x80         ; chama o kernel
 
-    call end
+    ret
 
 test_failed:
     ; Exibe mensagem de falha
@@ -49,6 +49,9 @@ test_product:
     cmp rax, 360
     jne test_failed
     call test_passed
+
+    ret
+    
     
     ; mov eax, 60      ; syscall: exit (Linux)
     ; xor edi, edi     ; status 0

@@ -38,7 +38,7 @@ test_passed:
     mov edx, pass_len ; tamanho da mensagem
     int 0x80         ; chama o kernel
 
-    call end
+    ret
 
 test_failed:
     ; Exibe mensagem de falha
@@ -47,8 +47,6 @@ test_failed:
     mov ecx, fail_msg ; mensagem de falha
     mov edx, fail_len ; tamanho da mensagem
     int 0x80         ; chama o kernel
-
-    call end
 
 ; _start:
 test_tensor_product:
@@ -95,8 +93,4 @@ test_tensor_product:
 
     call test_passed
 
-; Finaliza o programa
-end:
-    mov eax, 1       ; syscall: exit
-    xor ebx, ebx     ; status 0
-    int 0x80
+    ret

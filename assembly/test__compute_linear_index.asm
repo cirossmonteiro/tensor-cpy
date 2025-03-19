@@ -61,7 +61,7 @@ test__compute_linear_index:
 
     cmp qword rax, 26
     jne test_failed
-    jmp test_passed
+    call test_passed
 
     ; todo: ; second test case
     
